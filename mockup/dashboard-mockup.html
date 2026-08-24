@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HA Wall Dashboard — Mockup (2560×1080)</title>
+<style>
+  :root{
+    --bg:#05070b; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --txt:#e8ecf1; --dim:#8b94a3; --accent:#4aa3ff;
+    --green:#30d158; --red:#ff453a; --orange:#ff9f0a; --blue:#64a7ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden}
+  #stage{position:absolute;top:50%;left:50%;transform-origin:center center}
+  #canvas{
+    width:2560px;height:1080px;background:var(--bg);color:var(--txt);
+    display:grid;
+    grid-template-columns:640px 640px 640px 640px;
+    grid-template-rows:56px 360px 360px 248px 56px;
+    grid-template-areas:"header header header header" "cam1 cam2 cam3 cam4"
+      "cam5 cam6 cam7 cam8" "climate shades shades access" "footer footer footer footer";
+    gap:4px;padding:4px;
+  }
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+
+  /* ---------- HEADER ---------- */
+  #header{grid-area:header;display:flex;align-items:center;gap:18px;padding:0 22px}
+  .logo{font-weight:800;font-size:20px;color:var(--accent)}
+  .nav{display:flex;gap:8px}
+  .nav span{padding:7px 16px;border-radius:8px;font-size:15px;color:var(--dim);background:var(--panel);border:1px solid var(--line)}
+  .nav span.on{color:#fff;background:var(--panel2);border-color:var(--accent);font-weight:600}
+  #hdr-right{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:16px;color:var(--dim)}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+  #clock{font-size:24px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums}
+
+  /* ---------- CAMERA TILES ---------- */
+  .cam{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:#000}
+  .cam .scene{position:absolute;inset:0}
+  .cam .label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+    padding:5px 12px;border-radius:7px;font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center}
+  .live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+  .cam .ts{position:absolute;bottom:10px;right:10px;font-size:13px;color:#cfd6df;background:rgba(0,0,0,.5);
+    padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums}
+  .cam.alert{outline:3px solid var(--red);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{outline-color:rgba(255,69,58,.9)}50%{outline-color:rgba(255,69,58,.25)}}
+  .tag{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;font-size:14px;font-weight:700;
+    padding:4px 10px;border-radius:6px}
+  .snap{position:absolute;bottom:10px;left:10px;font-size:13px;background:rgba(255,159,10,.85);color:#000;
+    font-weight:700;padding:3px 9px;border-radius:6px}
+  /* fake scenes */
+  .sc-driveway{background:linear-gradient(180deg,#2a3550 0%,#151b2a 60%,#0c1018 100%),radial-gradient(circle at 70% 30%,#3b4a6b,transparent 55%);
+    background-blend-mode:screen}
+  .sc-backyard{background:linear-gradient(180deg,#1d3326 0%,#12211a 55%,#0b130f 100%)}
+  .sc-sidegate{background:linear-gradient(160deg,#33303e 0%,#17151f 60%,#0c0b12 100%)}
+  .sc-garage{background:linear-gradient(180deg,#262b36 0%,#141821 60%,#0b0e14 100%)}
+  .sc-patio{background:linear-gradient(200deg,#20303c 0%,#131e26 55%,#0b1116 100%)}
+  .sc-living{background:linear-gradient(180deg,#3a3226 0%,#201c15 55%,#120f0b 100%)}
+  .sc-ring{background:repeating-linear-gradient(45deg,#181d27,#181d27 14px,#151a23 14px,#151a23 28px)}
+
+  /* ---------- BOTTOM BAND ---------- */
+  #climate{grid-area:climate;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  #shades{grid-area:shades;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+  #access{grid-area:access;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  h3.sec{font-size:13px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:2px}
+
+  .dev-row{display:flex;align-items:center;gap:14px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px}
+  .ic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;background:#0d1420;border:1px solid var(--line);flex:none}
+  .dev-main{flex:1;min-width:0}
+  .dev-name{font-size:15px;font-weight:600}
+  .dev-sub{font-size:13px;color:var(--dim)}
+  .slider{height:8px;border-radius:4px;background:#0d1420;border:1px solid var(--line);position:relative;width:150px}
+  .slider i{position:absolute;top:-4px;width:16px;height:16px;border-radius:50%;background:#fff;transform:translateX(-8px)}
+  .fill-g{background:linear-gradient(90deg,var(--accent),#7cc4ff)}
+  .btn{padding:6px 14px;border-radius:8px;font-size:14px;font-weight:600;background:#0d1420;
+    border:1px solid var(--line);color:var(--txt)}
+  .btn.warn{border-color:var(--orange);color:var(--orange)}
+  .chips{display:flex;gap:8px}
+  .chip{flex:1;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 4px}
+  .chip b{font-size:17px;display:block}
+  .chip span{font-size:11px;color:var(--dim)}
+
+  .room-row{display:flex;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;height:42px}
+  .room-name{width:110px;font-size:15px;font-weight:600}
+  .shade-ctl{display:flex;align-items:center;gap:10px;width:330px}
+  .shade-bar{flex:1;height:7px;background:#0d1420;border:1px solid var(--line);border-radius:4px;position:relative}
+  .shade-bar i{position:absolute;inset:0;border-radius:3px;background:linear-gradient(90deg,#2b6cb8,var(--blue))}
+  .pct{font-size:13px;color:var(--dim);width:40px;text-align:right;font-variant-numeric:tabular-nums}
+  .sym{color:var(--dim);font-size:15px;padding:0 4px}
+  .light-pill{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end}
+  .pill{padding:5px 14px;border-radius:14px;font-size:13px;font-weight:600;border:1px solid}
+  .pill.on{color:#0b0e14;background:#ffd166;border-color:#ffd166}
+  .pill.off{color:var(--dim);border-color:var(--line)}
+  .bright{width:90px}
+
+  /* access column */
+  #garage-tile{display:flex;align-items:center;gap:16px;background:var(--panel2);border:1px solid var(--green);
+    border-radius:10px;padding:10px 18px}
+  #garage-state{font-size:26px;font-weight:800;color:var(--green)}
+  .events{display:flex;gap:8px}
+  .event{flex:1;background:#0d1420;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12.5px}
+  .event b{display:block;font-size:13px}
+  .event span{color:var(--dim)}
+  .pod{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;flex:1}
+  .play{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#001;display:flex;
+    align-items:center;justify-content:center;font-size:15px;flex:none}
+  .volbar{width:70px;height:6px;background:#0d1420;border-radius:3px;border:1px solid var(--line);position:relative}
+  .volbar i{position:absolute;inset:0;width:62%;background:var(--accent);border-radius:3px}
+  .announce{display:flex;gap:8px;align-items:center;background:#0d1420;border:1px dashed var(--line);
+    border-radius:8px;padding:7px 12px;color:var(--dim);font-size:14px}
+
+  /* ---------- FOOTER ---------- */
+  #footer{grid-area:footer;display:flex;align-items:center;gap:26px;padding:0 22px;font-size:15px;color:var(--dim)}
+  #footer b{color:var(--txt)}
+  .warn-item{color:#ffb4ad}
+  .sep{color:#39445a}
+</style>
+</head>
+<body>
+<div id="stage"><div id="canvas">
+
+  <!-- HEADER -->
+  <div id="header">
+    <span class="logo">⌂</span>
+    <div class="nav"><span class="on">Wall</span><span>Cameras</span><span>Climate</span><span>Lights</span><span>System</span></div>
+    <div id="hdr-right">
+      <span><span class="dot" style="background:var(--green)"></span>All secure</span>
+      <span>🌧 68°F</span>
+      <span id="clock">--:--</span>
+    </div>
+  </div>
+
+  <!-- CAMERA WALL -->
+  <div class="cam" style="grid-area:cam1"><div class="scene sc-driveway"></div>
+    <div class="label"><i class="live"></i>Driveway</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam2"><div class="scene sc-ring"></div>
+    <div class="label">Front Doorbell</div><div class="snap">SNAPSHOT · 21s AGO</div></div>
+
+  <div class="cam" style="grid-area:cam3"><div class="scene sc-backyard"></div>
+    <div class="label"><i class="live"></i>Backyard</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam4"><div class="scene sc-garage"></div>
+    <div class="label"><i class="live"></i>Garage Interior</div><div class="ts">14:32:06</div></div>
+
+  <div class="cam" style="grid-area:cam5"><div class="scene sc-patio"></div>
+    <div class="label"><i class="live"></i>Patio</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam6"><div class="scene sc-sidegate"></div>
+    <div class="label"><i class="live"></i>Side Gate</div>
+    <div class="tag">● PERSON</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam7"><div class="scene sc-living"></div>
+    <div class="label"><i class="live"></i>Living Room · Aqara G3</div><div class="ts">14:32:05</div></div>
+
+  <div class="cam" style="grid-area:cam8"><div class="scene sc-ring"></div>
+    <div class="label">Side Gate Doorbell</div><div class="snap">SNAPSHOT · 47s AGO</div></div>
+
+  <!-- CLIMATE -->
+  <div id="climate" class="panel">
+    <h3 class="sec">Climate &amp; Air</h3>
+    <div class="dev-row">
+      <div class="ic">💧</div>
+      <div class="dev-main"><div class="dev-name">Dehumidifier · Basement</div>
+        <div class="dev-sub">52% RH → target 45% · tank 30%</div></div>
+      <div class="slider fill-g" style="--w:62%"><i style="left:62%"></i></div>
+    </div>
+    <div class="dev-row">
+      <div class="ic">🌀</div>
+      <div class="dev-main"><div class="dev-name">Air Purifier · Living</div>
+        <div class="dev-sub">Speed 2 of 4 · PM2.5 11 µg/m³ · filter 74%</div></div>
+      <span class="btn">Sleep ⏻</span>
+    </div>
+    <div class="chips">
+      <div class="chip"><b>71°</b><span>LIVING</span></div>
+      <div class="chip"><b>46%</b><span>LIVING RH</span></div>
+      <div class="chip"><b>69°</b><span>NURSERY</span></div>
+      <div class="chip"><b>58%</b><span>BASEMENT</span></div>
+    </div>
+  </div>
+
+  <!-- SHADES + LIGHTS -->
+  <div id="shades" class="panel">
+    <h3 class="sec">Shades &amp; Lights</h3>
+    <div class="room-row"><span class="room-name">Living Room</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:100%"></i></div><span class="pct">100%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on">◉ 6 ON</span><div class="slider bright"><i style="left:70%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">Bedroom</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:72%"></i></div><span class="pct">72%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill off">○ 0/4</span><div class="slider bright" style="opacity:.35"></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">Office</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:85%"></i></div><span class="pct">85%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on">◉ 3 ON</span><div class="slider bright"><i style="left:45%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">Kitchen</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar" style="opacity:.4"></div><span class="pct">—</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on">◉ 5 ON</span><div class="slider bright"><i style="left:88%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">Nursery</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:30%"></i></div><span class="pct">30%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on" style="background:#ffd166">◉ DIM 8%</span><div class="slider bright"><i style="left:8%"></i></div></div>
+    </div>
+  </div>
+
+  <!-- ACCESS + MEDIA -->
+  <div id="access" class="panel">
+    <h3 class="sec">Access &amp; Media</h3>
+    <div id="garage-tile">
+      <div class="ic" style="width:46px;height:46px;font-size:24px;border-color:var(--green)">🏠</div>
+      <div><div id="garage-state">CLOSED</div><div class="dev-sub">RATGDO · obstruction clear</div></div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <span class="chip" style="width:auto;padding:6px 12px"><b style="display:inline">🚗</b><span>car home</span></span>
+        <span class="btn warn">OPEN</span>
+      </div>
+    </div>
+    <div class="events">
+      <div class="event"><b>Front Doorbell</b><span>Person · 12 min ago</span></div>
+      <div class="event"><b>Side Gate</b><span>Motion · 41 min ago</span></div>
+      <div class="event"><b>Driveway</b><span>Vehicle · 1 h ago</span></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="pod"><div class="play">▶</div>
+        <div class="dev-main"><div class="dev-name" style="font-size:14px">Kitchen Pod</div><div class="dev-sub">Idle · AirPlay</div></div>
+        <div class="volbar"><i></i></div></div>
+      <div class="pod"><div class="play" style="background:#39445a">❚❚</div>
+        <div class="dev-main"><div class="dev-name" style="font-size:14px">Office Pod</div><div class="dev-sub">Lo-fi Beats · 62%</div></div>
+        <div class="volbar"><i style="width:38%"></i></div></div>
+    </div>
+    <div class="announce">💬 Announce to all HomePods… <span style="margin-left:auto">⏎ Send</span></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <span class="warn-item">⚠ Basement leak sensor wet · cleared 2 d ago</span><span class="sep">│</span>
+    <span>Batteries ≥ <b>34%</b> (Nursery shade)</span><span class="sep">│</span>
+    <span>Doors: <b style="color:var(--green)">all locked</b></span><span class="sep">│</span>
+    <span>Home Assistant up <b>12 d</b></span>
+    <span style="margin-left:auto" id="foot-clock">Monday · --:--</span>
+  </div>
+
+</div></div>
+<script>
+  const stage=document.getElementById('stage'),canvas=document.getElementById('canvas');
+  function fit(){
+    const s=Math.min(innerWidth/2560,innerHeight/1080);
+    stage.style.transform=`translate(-50%,-50%) scale(${s})`;
+    stage.style.left='50%';stage.style.top='50%';
+  }
+  addEventListener('resize',fit);fit();
+  function tick(){
+    const n=new Date();
+    document.getElementById('clock').textContent=n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('foot-clock').textContent=
+      n.toLocaleDateString([], {weekday:'long'})+' · '+n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+  setInterval(tick,1000);tick();
+</script>
+</body>
+</html>

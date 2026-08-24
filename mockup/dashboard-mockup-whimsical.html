@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home Brain — Whimsical Mockup (2560×1080)</title>
+<style>
+  :root{
+    --bg1:#241b4d; --bg2:#3c2a63; --panel:#2c2350; --panel2:#383066;
+    --line:#4d4390; --txt:#fff6ec; --dim:#b9aee0;
+    --sun:#ffd166; --coral:#ff8fa3; --mint:#7be0c3; --sky:#82c7ff; --lilac:#c9a7ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Chalkboard SE","Comic Sans MS","Segoe Print",cursive}
+  html,body{width:100%;height:100%;background:#120d29;overflow:hidden}
+  #stage{position:absolute;top:50%;left:50%;transform-origin:center center}
+  #canvas{
+    width:2560px;height:1080px;color:var(--txt);
+    background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 55%,#4a2f5f 100%);
+    display:grid;
+    grid-template-columns:640px 640px 640px 640px;
+    grid-template-rows:56px 360px 360px 248px 56px;
+    grid-template-areas:"header header header header" "cam1 cam2 cam3 cam4"
+      "cam5 cam6 cam7 cam8" "climate shades shades access" "footer footer footer footer";
+    gap:6px;padding:6px;position:relative;overflow:hidden;
+  }
+  /* twinkling stars */
+  .star{position:absolute;color:#fff;animation:twinkle 3s ease-in-out infinite;z-index:0;pointer-events:none}
+  @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.85}}
+  .cloud{position:absolute;font-size:44px;opacity:.22;z-index:1;pointer-events:none;animation:drift 60s linear infinite}
+  @keyframes drift{from{transform:translateX(-120px)}to{transform:translateX(2700px)}}
+
+  .panel{background:var(--panel);border:3px solid var(--line);border-radius:26px 22px 28px 20px;position:relative;z-index:2}
+
+  /* ---------- HEADER ---------- */
+  #header{grid-area:header;display:flex;align-items:center;gap:18px;padding:0 22px;z-index:3}
+  .logo{font-size:26px}
+  .greet{font-size:19px;color:var(--sun);font-weight:700;margin-left:-6px}
+  .nav{display:flex;gap:10px}
+  .nav span{padding:7px 18px;border-radius:999px;font-size:15px;color:var(--dim);background:var(--panel);border:2px solid var(--line)}
+  .nav span.on{color:#241b4d;background:var(--sun);border-color:var(--sun);font-weight:800;transform:rotate(-2deg)}
+  #hdr-right{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:17px;color:var(--txt)}
+  #clock{font-size:26px;font-weight:800;color:var(--sun);font-variant-numeric:tabular-nums}
+
+  /* ---------- CAMERA TILES ---------- */
+  .cam{position:relative;overflow:hidden;border-radius:24px;border:3px solid var(--line);background:#000;z-index:2}
+  .cam:nth-child(odd){transform:rotate(.35deg)}
+  .cam:nth-child(even){transform:rotate(-.35deg)}
+  .cam .scene{position:absolute;inset:0}
+  .cam .label{position:absolute;top:12px;left:12px;background:rgba(20,14,50,.72);border:2px solid var(--line);
+    padding:6px 14px;border-radius:999px;font-size:16px;font-weight:700;display:flex;gap:9px;align-items:center}
+  .live{width:9px;height:9px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint);animation:blink 2.4s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .cam .ts{position:absolute;bottom:12px;right:12px;font-size:13px;color:#efeaff;background:rgba(20,14,50,.65);
+    padding:4px 11px;border-radius:999px;font-variant-numeric:tabular-nums}
+  .cam.alert{outline:4px solid var(--coral);animation:wobble 1.4s ease-in-out infinite}
+  @keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(.7deg)}75%{transform:rotate(-.7deg)}}
+  .tag{position:absolute;top:12px;right:12px;background:var(--coral);color:#401015;font-size:15px;font-weight:800;
+    padding:5px 13px;border-radius:999px;animation:bounce 1s ease-in-out infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .snap{position:absolute;bottom:12px;left:12px;font-size:13px;background:var(--sun);color:#4a3200;
+    font-weight:800;padding:4px 12px;border-radius:999px}
+  .sc-driveway{background:linear-gradient(180deg,#33407a 0%,#1a2142 60%,#10142a 100%)}
+  .sc-backyard{background:linear-gradient(180deg,#1e4630 0%,#14301f 55%,#0c2015 100%)}
+  .sc-sidegate{background:linear-gradient(160deg,#4a3f77 0%,#241d47 60%,#151031 100%)}
+  .sc-garage{background:linear-gradient(180deg,#37406b 0%,#20264a 60%,#131631 100%)}
+  .sc-patio{background:linear-gradient(200deg,#274b66 0%,#183044 55%,#0e1e2c 100%)}
+  .sc-living{background:linear-gradient(180deg,#6b5433 0%,#42351f 55%,#292113 100%)}
+  .sc-ring{background:repeating-linear-gradient(45deg,#2c2350,#2c2350 16px,#282049 16px,#282049 32px)}
+
+  /* ---------- BOTTOM BAND ---------- */
+  #climate{grid-area:climate;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transform:rotate(-.3deg)}
+  #shades{grid-area:shades;padding:14px 18px;display:flex;flex-direction:column;gap:9px}
+  #access{grid-area:access;padding:14px 18px;display:flex;flex-direction:column;gap:10px;transform:rotate(.3deg)}
+  h3.sec{font-size:14px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:2px}
+
+  .dev-row{display:flex;align-items:center;gap:14px;background:var(--panel2);border:2px solid var(--line);
+    border-radius:20px;padding:10px 16px}
+  .ic{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:21px;background:#241b4d;border:2px solid var(--line);flex:none}
+  .dev-main{flex:1;min-width:0}
+  .dev-name{font-size:15.5px;font-weight:700}
+  .dev-sub{font-size:13.5px;color:var(--dim)}
+  .slider{height:10px;border-radius:6px;background:#241b4d;border:2px solid var(--line);position:relative;width:150px}
+  .slider i{position:absolute;top:-5px;width:18px;height:18px;border-radius:50%;background:#fff;transform:translateX(-9px);box-shadow:0 2px 5px rgba(0,0,0,.4)}
+  .fill-g{background:linear-gradient(90deg,var(--mint),var(--sky))}
+  .btn{padding:7px 16px;border-radius:999px;font-size:14.5px;font-weight:800;background:#241b4d;
+    border:2px solid var(--line);color:var(--txt)}
+  .btn.warn{border-color:var(--sun);color:var(--sun)}
+  .chips{display:flex;gap:8px}
+  .chip{flex:1;text-align:center;background:var(--panel2);border:2px solid var(--line);border-radius:16px;padding:6px 4px}
+  .chip b{font-size:18px;display:block}
+  .chip span{font-size:11px;color:var(--dim);letter-spacing:.08em}
+
+  .room-row{display:flex;align-items:center;gap:12px;background:var(--panel2);border:2px solid var(--line);
+    border-radius:999px;padding:6px 18px;height:42px}
+  .room-name{width:118px;font-size:15.5px;font-weight:800}
+  .shade-ctl{display:flex;align-items:center;gap:10px;width:330px}
+  .shade-bar{flex:1;height:9px;background:#241b4d;border:2px solid var(--line);border-radius:6px;overflow:hidden;position:relative}
+  .shade-bar i{position:absolute;inset:0;border-radius:4px;
+    background:repeating-linear-gradient(90deg,var(--sky) 0 10px,#5fb3ef 10px 20px)}
+  .pct{font-size:13.5px;color:var(--dim);width:42px;text-align:right;font-variant-numeric:tabular-nums}
+  .sym{color:var(--dim);font-size:15px;padding:0 4px}
+  .light-pill{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end}
+  .pill{padding:6px 16px;border-radius:999px;font-size:13.5px;font-weight:800;border:2px solid}
+  .pill.on{color:#3d2a00;background:var(--sun);border-color:var(--sun);box-shadow:0 0 14px rgba(255,209,102,.45)}
+  .pill.off{color:var(--dim);border-color:var(--line);background:#241b4d}
+  .bright{width:90px;height:8px}
+  .glow{animation:glowpulse 3s ease-in-out infinite}
+  @keyframes glowpulse{0%,100%{box-shadow:0 0 8px rgba(255,209,102,.3)}50%{box-shadow:0 0 20px rgba(255,209,102,.65)}}
+
+  /* access column */
+  #garage-tile{display:flex;align-items:center;gap:16px;background:var(--panel2);border:3px solid var(--mint);
+    border-radius:24px;padding:10px 20px;position:relative}
+  .bubble{position:absolute;top:-16px;left:70px;background:#fff;color:#241b4d;font-size:13.5px;font-weight:800;
+    padding:5px 14px;border-radius:16px 16px 16px 4px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+  #garage-state{font-size:27px;font-weight:800;color:var(--mint)}
+  .events{display:flex;gap:8px}
+  .event{flex:1;background:#241b4d;border:2px solid var(--line);border-radius:16px;padding:6px 12px;font-size:12.5px}
+  .event b{display:block;font-size:13.5px}
+  .event span{color:var(--dim)}
+  .pod{display:flex;align-items:center;gap:10px;background:var(--panel2);border:2px solid var(--line);
+    border-radius:18px;padding:8px 14px;flex:1}
+  .play{width:36px;height:36px;border-radius:50%;background:var(--coral);color:#401015;display:flex;
+    align-items:center;justify-content:center;font-size:15px;flex:none;font-weight:900}
+  .eq{display:flex;gap:3px;align-items:flex-end;height:22px;width:56px}
+  .eq i{width:6px;background:var(--lilac);border-radius:3px;animation:eq 1s ease-in-out infinite}
+  .eq i:nth-child(1){height:40%;animation-delay:0s}.eq i:nth-child(2){height:90%;animation-delay:.15s}
+  .eq i:nth-child(3){height:60%;animation-delay:.3s}.eq i:nth-child(4){height:100%;animation-delay:.45s}
+  .eq i:nth-child(5){height:50%;animation-delay:.6s}
+  @keyframes eq{0%,100%{height:25%}50%{height:100%}}
+  .announce{display:flex;gap:8px;align-items:center;background:#241b4d;border:2px dashed var(--line);
+    border-radius:999px;padding:8px 16px;color:var(--dim);font-size:14.5px}
+
+  /* ---------- FOOTER ---------- */
+  #footer{grid-area:footer;display:flex;align-items:center;gap:18px;padding:0 10px;font-size:15.5px;color:var(--dim);overflow:hidden}
+  .ticker{display:inline-flex;gap:48px;white-space:nowrap;animation:scroll 32s linear infinite}
+  .ticker b{color:var(--txt)}
+  .warn-item{color:var(--coral)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div id="stage"><div id="canvas">
+
+  <span class="star" style="top:8%;left:12%;font-size:18px">✦</span>
+  <span class="star" style="top:22%;left:41%;font-size:13px;animation-delay:.8s">✦</span>
+  <span class="star" style="top:6%;left:67%;font-size:16px;animation-delay:1.4s">✦</span>
+  <span class="star" style="top:30%;left:88%;font-size:14px;animation-delay:.4s">✦</span>
+  <span class="star" style="top:44%;left:23%;font-size:12px;animation-delay:1.9s">✦</span>
+  <div class="cloud" style="top:52px">☁️</div>
+  <div class="cloud" style="top:400px;animation-duration:85s;animation-delay:-30s">☁️</div>
+
+  <!-- HEADER -->
+  <div id="header">
+    <span class="logo">🏡</span><span class="greet">Good afternoon, sunshine!</span>
+    <div class="nav"><span class="on">Wall</span><span>Cameras</span><span>Climate</span><span>Lights</span><span>System</span></div>
+    <div id="hdr-right"><span>🌧 68°F outside</span><span id="clock">--:--</span></div>
+  </div>
+
+  <!-- CAMERA WALL -->
+  <div class="cam" style="grid-area:cam1"><div class="scene sc-driveway"></div>
+    <div class="label"><i class="live"></i>🚗 Driveway Drive-In</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam2"><div class="scene sc-ring"></div>
+    <div class="label">🔔 Front Door Peephole</div><div class="snap">📸 SELFIE · 21s AGO</div></div>
+
+  <div class="cam" style="grid-area:cam3"><div class="scene sc-backyard"></div>
+    <div class="label"><i class="live"></i>🐿 Squirrel TV (Backyard)</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam4"><div class="scene sc-garage"></div>
+    <div class="label"><i class="live"></i>🛠 Workshop Watcher</div><div class="ts">14:32:06</div></div>
+
+  <div class="cam" style="grid-area:cam5"><div class="scene sc-patio"></div>
+    <div class="label"><i class="live"></i>🍹 Patio Paradise</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam alert" style="grid-area:cam6"><div class="scene sc-sidegate"></div>
+    <div class="label"><i class="live"></i>🌿 Side Gate Spy</div>
+    <div class="tag">👀 VISITOR!</div><div class="ts">14:32:07</div></div>
+
+  <div class="cam" style="grid-area:cam7"><div class="scene sc-living"></div>
+    <div class="label"><i class="live"></i>🛋 Living Room Reality Show</div><div class="ts">14:32:05</div></div>
+
+  <div class="cam" style="grid-area:cam8"><div class="scene sc-ring"></div>
+    <div class="label">🚪 Side Gate Doorbell</div><div class="snap">📸 SELFIE · 47s AGO</div></div>
+
+  <!-- CLIMATE -->
+  <div id="climate" class="panel">
+    <h3 class="sec">Weather Inside 🌈</h3>
+    <div class="dev-row">
+      <div class="ic">💧</div>
+      <div class="dev-main"><div class="dev-name">Basement Slurp-o-Matic</div>
+        <div class="dev-sub">52% → 45% humidity · glug glug · tank 30%</div></div>
+      <div class="slider fill-g"><i style="left:62%"></i></div>
+    </div>
+    <div class="dev-row">
+      <div class="ic">🌀</div>
+      <div class="dev-main"><div class="dev-name">Fresh Air Machine</div>
+        <div class="dev-sub">Whirring at level 2 · PM2.5 sparkly clean ✨ 11</div></div>
+      <span class="btn warn">Shhh mode ⏻</span>
+    </div>
+    <div class="chips">
+      <div class="chip"><b>71° 😊</b><span>LIVING</span></div>
+      <div class="chip"><b>46%</b><span>COZY AIR</span></div>
+      <div class="chip"><b>69° 🥱</b><span>NURSERY</span></div>
+      <div class="chip"><b>58%</b><span>DUNGEON RH</span></div>
+    </div>
+  </div>
+
+  <!-- SHADES + LIGHTS -->
+  <div id="shades" class="panel">
+    <h3 class="sec">Blanket Fort Controls 🪄</h3>
+    <div class="room-row"><span class="room-name">☀️ Living Room</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:100%"></i></div><span class="pct">100%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on glow">💡 6 glowing</span><div class="slider bright"><i style="left:70%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">🌙 Bedroom</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:72%"></i></div><span class="pct">72%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill off">😴 lights dreaming</span><div class="slider bright" style="opacity:.35"></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">💼 Office</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:85%"></i></div><span class="pct">85%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on glow">💡 3 glowing</span><div class="slider bright"><i style="left:45%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">🍳 Kitchen</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar" style="opacity:.4"></div><span class="pct">—</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on glow">💡 5 glowing</span><div class="slider bright"><i style="left:88%"></i></div></div>
+    </div>
+    <div class="room-row"><span class="room-name">🍼 Nursery</span>
+      <div class="shade-ctl"><span class="sym">▲</span><div class="shade-bar"><i style="width:30%"></i></div><span class="pct">30%</span><span class="sym">■ ▼</span></div>
+      <div class="light-pill"><span class="pill on glow">🕯 dim &amp; sleepy</span><div class="slider bright"><i style="left:8%"></i></div></div>
+    </div>
+  </div>
+
+  <!-- ACCESS + MEDIA -->
+  <div id="access" class="panel">
+    <h3 class="sec">Come &amp; Goings 🚗</h3>
+    <div id="garage-tile">
+      <div class="bubble">Nice parking! 🚗💨</div>
+      <div class="ic" style="width:48px;height:48px;font-size:25px;border-color:var(--mint)">🏠</div>
+      <div><div id="garage-state">SHUT TIGHT 🔒</div><div class="dev-sub">no bumpers harmed · sensor says clear</div></div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <span class="chip" style="width:auto;padding:6px 12px"><b style="display:inline">🚗</b><span>car's home</span></span>
+        <span class="btn warn">OPEN SESAME</span>
+      </div>
+    </div>
+    <div class="events">
+      <div class="event"><b>🔔 Front Doorbell</b><span>a human! · 12 min ago</span></div>
+      <div class="event"><b>🌿 Side Gate</b><span>suspicious raccoon · 41 min</span></div>
+      <div class="event"><b>🚗 Driveway</b><span>car friend · 1 h ago</span></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="pod"><div class="play">▶</div>
+        <div class="dev-main"><div class="dev-name" style="font-size:14px">Kitchen Pod</div><div class="dev-sub">napping… zzz</div></div>
+        <div class="eq" style="opacity:.25"><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="pod"><div class="play" style="background:var(--lilac)">❚❚</div>
+        <div class="dev-main"><div class="dev-name" style="font-size:14px">Office Pod</div><div class="dev-sub">Lo-fi Beats · vibing 62%</div></div>
+        <div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div>
+    </div>
+    <div class="announce">📣 Shout to all pods… <span style="margin-left:auto">⏎ make it so!</span></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <div class="ticker">
+      <span class="warn-item">⚠️ basement leak sensor got splashed · all dry since 2 days ago 🎉</span>
+      <span>🔋 nursery shade battery <b>34%</b> — hangry for USB</span>
+      <span>🚪 doors: <b>all locked up tight 🔒✨</b></span>
+      <span>☕ Home Assistant awake for <b>12 days</b> straight, still caffeinated</span>
+      <span>🐿 squirrel counter today: <b>7</b></span>
+      <span class="warn-item">⚠️ basement leak sensor got splashed · all dry since 2 days ago 🎉</span>
+      <span>🔋 nursery shade battery <b>34%</b> — hangry for USB</span>
+      <span>🚪 doors: <b>all locked up tight 🔒✨</b></span>
+      <span>☕ Home Assistant awake for <b>12 days</b> straight, still caffeinated</span>
+      <span>🐿 squirrel counter today: <b>7</b></span>
+    </div>
+  </div>
+
+</div></div>
+<script>
+  const stage=document.getElementById('stage');
+  function fit(){
+    const s=Math.min(innerWidth/2560,innerHeight/1080);
+    stage.style.transform=`translate(-50%,-50%) scale(${s})`;
+    stage.style.left='50%';stage.style.top='50%';
+  }
+  addEventListener('resize',fit);fit();
+  function tick(){
+    const n=new Date(),h=n.getHours();
+    document.getElementById('clock').textContent=n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    const g=h<5?"Up late, night owl?":h<12?"Good morning, sunshine!":h<17?"Good afternoon, sunshine!":h<22?"Good evening, starlight!":"Sweet dreams incoming…";
+    document.querySelector('.greet').textContent=g;
+  }
+  setInterval(tick,1000);tick();
+</script>
+</body>
+</html>
